@@ -1,32 +1,34 @@
-// back/src/prisma/prisma.service.ts
+
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
-import { ConfigService } from '@nestjs/config';
+import { prisma } from '../lib/prisma';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor(private configService: ConfigService) {
-    const connectionString = configService.get<string>('DATABASE_URL');
-    
-    if (!connectionString) {
-      throw new Error('DATABASE_URL não configurada');
-    }
-
-    const pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
-    
-    super({ adapter });
+export class PrismaService implements OnModuleInit, OnModuleDestroy {
+  // ✅ EXPOR TODOS OS MODELOS
+  get user() {
+    return prisma.user;
   }
 
+  get cliente() {
+    return prisma.cliente;
+  }
+
+  get ticket() {
+    return prisma.ticket;
+  }
+
+  get refreshToken() {
+    return prisma.refreshToken;
+  }
+
+  // Métodos auxiliares
   async onModuleInit() {
-    await this.$connect();
+    await prisma.$connect();
     console.log('✅ Banco de dados conectado!');
   }
 
   async onModuleDestroy() {
-    await this.$disconnect();
+    await prisma.$disconnect();
     console.log('🔌 Banco de dados desconectado!');
   }
 }
