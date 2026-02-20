@@ -50,21 +50,13 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      Role     @default(ATTENDANT)
+  role      Role     @default(ATTENDANT)  // ✅ SEM ASPAS!
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // ✅ REMOVA as linhas que estão causando erro
-  // tickets      Ticket[]    @relation("CreatedTickets")
-  // assignedTickets Ticket[] @relation("AssignedTickets")
-  // messages     TicketMessage[]
-  // refreshTokens RefreshToken[]
-  // atividades   Atividade[]        ← NÃO EXISTE
-  // anexos       Attachment[]       ← NÃO EXISTE
-  // clienteAtividades ClienteAtividade[] ← NÃO EXISTE
-
   @@map("users")
 }
+
 
 // ============================================
 // MODELO CLIENTE
