@@ -5,139 +5,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(ATTENDANT)  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-
-  
-  
-  tickets           Ticket[]      @relation("CreatedTickets")  
-  assignedTickets   Ticket[]      @relation("AssignedTickets") 
-  updatedTickets    Ticket[]      @relation("UpdatedTickets")  
-  messages          TicketMessage[]
-  attachments       Attachment[]
-  refreshTokens     RefreshToken[]
-  activities        Activity[]
-
-  @@map("users")
-}
-
-model Ticket {
-  id          String        @id @default(uuid())
-  title       String
-  description String?
-  status      TicketStatus  @default(OPEN)
-  priority    TicketPriority @default(MEDIUM)
-  source      TicketSource  @default(EMAIL)
-  customerId  String
-  customer    Customer      @relation(fields: [customerId], references: [id])
-  
-  assignedTo  String?
-  assignedUser User?        @relation("AssignedTickets", fields: [assignedTo], references: [id])
-  
-  createdById String
-  createdBy   User          @relation("CreatedTickets", fields: [createdById], references: [id])
-  
-  updatedById String?
-  updatedBy   User?         @relation("UpdatedTickets", fields: [updatedById], references: [id])
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  closedAt    DateTime?
-  slaDueAt    DateTime?
-  
-  messages    TicketMessage[]
-  tags        Tag[]
-  attachments Attachment[]
-}
-
-model Customer {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  name         String
-  phone        String?
-  company      String?
-  cpfCnpj      String?
-  address      String?
-  city         String?
-  state        String?
-  zipCode      String?
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  tickets      Ticket[]
-}
-
-model TicketMessage {
-  id          String   @id @default(uuid())
-  content     String
-  type        MessageType @default(TEXT)
-  isInternal  Boolean  @default(false)
-  ticketId    String
-  ticket      Ticket   @relation(fields: [ticketId], references: [id])
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  attachments Attachment[]
-}
-
-model Tag {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  color     String   @default("#3b82f6")
-  tickets   Ticket[]
-  createdAt DateTime @default(now())
-}
-
-model Attachment {
-  id          String   @id @default(uuid())
-  filename    String
-  originalName String
-  mimeType    String
-  size        Int
-  path        String
-  url         String
-  ticketId    String
-  ticket      Ticket   @relation(fields: [ticketId], references: [id])
-  messageId   String?
-  message     TicketMessage? @relation(fields: [messageId], references: [id])
-  uploadedById String
-  uploadedBy  User     @relation(fields: [uploadedById], references: [id])
-  createdAt   DateTime @default(now())
-}
-
-model Activity {
-  id          String   @id @default(uuid())
-  action      String
-  description String?
-  entityType  String
-  entityId    String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  metadata    Json?
-  createdAt   DateTime @default(now())
-}
-
-model RefreshToken {
-  id          String   @id @default(uuid())
-  token       String   @unique
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  revokedAt   DateTime?
-}
-
+// ============================================
+// ENUMS (definidos UMA ÚNICA vez)
+// ============================================
 enum Role {
   ADMIN
   MANAGER
@@ -146,33 +18,133 @@ enum Role {
 }
 
 enum TicketStatus {
-  OPEN
-  PENDING
-  RESOLVED
-  CLOSED
-  WAITING_CUSTOMER
-  WAITING_THIRD_PARTY
+  ABERTO
+  PENDENTE
+  RESOLVIDO
+  FECHADO
+  CANCELADO
 }
 
-enum TicketPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
+enum TicketPrioridade {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
 }
 
-enum TicketSource {
-  EMAIL
-  PHONE
-  CHAT
-  PORTAL
-  API
-  OTHER
+enum TicketTipo {
+  SOLICITACAO
+  CANCELAMENTO
+  INTEGRACAO
+  DUVIDA
+  RECLAMACAO
+  LEAD
 }
 
-enum MessageType {
-  TEXT
-  SYSTEM
-  EMAIL
-  NOTE
+// ============================================
+// MODELO USER (CORRIGIDO)
+// ============================================
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(ATTENDANT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ✅ REMOVA as linhas que estão causando erro
+  // tickets      Ticket[]    @relation("CreatedTickets")
+  // assignedTickets Ticket[] @relation("AssignedTickets")
+  // messages     TicketMessage[]
+  // refreshTokens RefreshToken[]
+  // atividades   Atividade[]        ← NÃO EXISTE
+  // anexos       Attachment[]       ← NÃO EXISTE
+  // clienteAtividades ClienteAtividade[] ← NÃO EXISTE
+
+  @@map("users")
 }
+
+// ============================================
+// MODELO CLIENTE
+// ============================================
+model Cliente {
+  id           String   @id @default(uuid())
+  nome         String
+  email        String   @unique
+  telefone     String?
+  empresa      String?
+  cpfCnpj      String?
+  tipo         String   @default("PF")
+  status       String   @default("ATIVO")
+  dataCadastro DateTime @default(now())
+  observacoes  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ✅ RELACIONAMENTOS
+  tickets Ticket[]
+
+  @@map("clientes")
+}
+
+// ============================================
+// MODELO TICKET
+// ============================================
+model Ticket {
+  id         String   @id @default(uuid())
+  numero     Int      @default(autoincrement())
+  assunto    String
+  descricao  String?
+  tipo       String   @default("SOLICITACAO")
+  prioridade Int      @default(2)
+  status     String   @default("ABERTO")
+  
+  clienteId  String
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  resolvidoEm DateTime?
+  prazoSLA   DateTime
+  
+  @@unique([numero])
+  @@map("tickets")
+}
+
+// ============================================
+// MODELOS QUE VOCÊ PRECISA (SE QUISER USAR)
+// ============================================
+
+// Descomente apenas se realmente precisar
+/*
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  @@map("refresh_tokens")
+}
+
+model TicketMessage {
+  id         String   @id @default(uuid())
+  conteudo   String
+  tipo       String   @default("TEXTO")
+  publico    Boolean  @default(true)
+  
+  ticketId   String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id])
+  
+  usuarioId  String
+  usuario    User     @relation(fields: [usuarioId], references: [id])
+  
+  criadoEm   DateTime @default(now())
+
+  @@map("ticket_messages")
+}
+*/
