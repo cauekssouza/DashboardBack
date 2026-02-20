@@ -13,9 +13,11 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      Role   @default("ATTENDANT")  
+  role      Role     @default(ATTENDANT)  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+
   
   
   tickets           Ticket[]      @relation("CreatedTickets")  
