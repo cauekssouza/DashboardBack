@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model SheetImport {
+  id        String   @id @default(uuid())
+  data      Json
+  source    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sheet_imports")
+}
+
+// Dados estruturados de tickets da planilha
+model TicketData {
+  id              String   @id @default(uuid())
+  timestamp       DateTime
+  ticketId        Int?
+  nome            String?
+  email           String?
+  assunto         String?
+  totalTickets   Int      @default(0)
+  urgente         Boolean  @default(false)
+  vip             Boolean  @default(false)
+  especializado   Boolean  @default(false)
+  scoreRisco      String?
+  scoreRecorrencia String?
+  classificacao   String?
+  recomendacao    String?
+  cancelou        Boolean  @default(false)
+  integracao      Boolean  @default(false)
+  problemaPagamento Boolean @default(false)
+  clienteDesde    DateTime?
+  diasCliente     Int      @default(0)
+  status          String?
+  prazo           DateTime?
+  periodo         String   @default("30d") // 7d, 30d, 1m, 3m, 6m, 1y
+  source          String   @default("google_sheets")
+  createdAt       DateTime @default(now())
+
+  @@map("ticket_data")
+}
+
+// Métricas de desempenho calculadas por período
+model PerformanceMetrics {
+  id              String   @id @default(uuid())
+  periodo         String   // 1m, 3m, 6m, 1y
+  totalTickets    Int      @default(0)
+  ticketsAbertos  Int      @default(0)
+  ticketsFechados Int      @default(0)
+  ticketsUrgentes Int      @default(0)
+  ticketsVIP      Int      @default(0)
+  ticketsEspecializados Int @default(0)
+  taxaResolucao   Float    @default(0)
+  tempoMedioResposta Float  @default(0)
+  taxaCancelamento Float   @default(0)
+  clientesTotal   Int      @default(0)
+  clientesNovos   Int      @default(0)
+  scoreRiscoAlto  Int      @default(0)
+  scoreRecorrenciaAlta Int @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([periodo])
+  @@map("performance_metrics")
+}
+
+// Análise de lucratividade
+model ProfitabilityAnalysis {
+  id              String   @id @default(uuid())
+  periodo         String
+  totalClientes   Int      @default(0)
+  clientesLucrativos Int   @default(0)
+  clientesNaoLucrativos Int @default(0)
+  ticketsTotal    Int      @default(0)
+  ticketsUrgentes Int      @default(0)
+  ticketsVIP      Int      @default(0)
+  taxaEsforco     Float    @default(0) // ratio esforço/retorno estimado
+  custoEstimado   Float    @default(0)
+  scoreMedio      Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([periodo])
+  @@map("profitability_analysis")
+}
