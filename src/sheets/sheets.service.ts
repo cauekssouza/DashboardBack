@@ -713,5 +713,26 @@ export class SheetsService {
     });
     return latest?.data || [];
   }
+
+  /**
+   * Obter TODOS os dados brutos da planilha (sem processar)
+   * Retorna todos os campos exatamente como estão na planilha
+   */
+  async getAllRawData(periodo: string): Promise<any> {
+    try {
+      // Primeiro, buscar dados frescos da planilha
+      await this.fetchAndProcessSheetData(periodo);
+      
+      // Depois, retornar os dados brutos
+      const latest = await this.prisma.client.sheetImport.findFirst({
+        orderBy: { createdAt: 'desc' },
+      });
+      
+      return latest?.data || [];
+    } catch (error: any) {
+      this.logger.error('❌ Erro ao buscar dados brutos:', error.message);
+      throw error;
+    }
+  }
 }
 

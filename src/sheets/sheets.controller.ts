@@ -59,6 +59,33 @@ export class SheetsController {
   }
 
   /**
+   * Obter TODOS os dados brutos da planilha (sem processar)
+   * Retorna todos os campos presentes na planilha
+   */
+  @Get('all')
+  async getAllRawData(@Query('periodo') periodo: string = '30d') {
+    try {
+      const validPeriods = ['7d', '30d', '1m', '3m', '6m', '1y'];
+      const validPeriod = validPeriods.includes(periodo) ? periodo : '30d';
+
+      const data = await this.sheetsService.getAllRawData(validPeriod);
+      
+      return {
+        success: true,
+        periodo: validPeriod,
+        count: data.length,
+        data: data
+      };
+    } catch (error: any) {
+      throw new HttpException({
+        success: false,
+        message: 'Erro ao buscar dados',
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
    * Obter métricas de desempenho por período
    * Períodos: 1m, 3m, 6m, 1y
    */
